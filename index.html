@@ -3,588 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>NineX Ecosystem</title>
+  <title>NineX Social</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     :root {
-      --bg-dark: #030712;
-      --glass-surface: rgba(17, 24, 39, 0.75);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-highlight: rgba(255, 255, 255, 0.15);
-      --neon-emerald: #00E676;
+      --bg-black: #05070d;
+      --panel-bg: rgba(17, 24, 39, 0.9);
+      --border-line: rgba(255, 255, 255, 0.08);
+      --neon-green: #00E676;
       --neon-cyan: #00E5FF;
-      --neon-rose: #FF1744;
+      --neon-red: #FF1744;
       --text-main: #F9FAFB;
-      --text-muted: #9CA3AF;
-      --app-font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --text-sub: #9CA3AF;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: var(--app-font);
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #000; color: var(--text-main); height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
 
-    body {
-      background: var(--bg-dark);
-      color: var(--text-main);
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+    .app-screen { width: 100vw; height: 100vh; max-width: 440px; position: relative; background: var(--bg-black); display: flex; flex-direction: column; overflow: hidden; }
 
-    .app-frame {
-      width: 100vw;
-      height: 100vh;
-      max-width: 440px;
-      position: relative;
-      background: radial-gradient(circle at 10% 10%, #064e3b20 0%, transparent 40%),
-                  radial-gradient(circle at 90% 90%, #0284c720 0%, transparent 40%),
-                  var(--bg-dark);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+    /* AUTH OVERLAY */
+    #authModal {
+      position: absolute; inset: 0; background: rgba(3, 7, 18, 0.98); backdrop-filter: blur(25px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; z-index: 999;
     }
+    .auth-box { width: 100%; background: var(--panel-bg); border: 1px solid var(--border-line); border-radius: 24px; padding: 26px 20px; text-align: center; }
+    .auth-box input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid var(--border-line); padding: 13px 16px; border-radius: 14px; color: #fff; font-size: 14px; outline: none; margin-bottom: 12px; }
+    .auth-box button { width: 100%; background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan)); color: #000; border: none; padding: 13px; border-radius: 14px; font-weight: 800; font-size: 15px; cursor: pointer; }
+    .auth-link { margin-top: 14px; font-size: 12px; color: var(--neon-cyan); cursor: pointer; display: block; }
 
-    .top-bar {
-      height: 64px;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--glass-surface);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border-bottom: 1px solid var(--glass-border);
-      z-index: 100;
-    }
+    /* HEADER */
+    .header-bar { height: 58px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: var(--panel-bg); border-bottom: 1px solid var(--border-line); z-index: 20; }
+    .app-name { font-size: 20px; font-weight: 800; background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .user-pill { font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.06); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-line); display: flex; align-items: center; gap: 8px; }
 
-    .brand-logo {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      background: linear-gradient(135deg, var(--neon-emerald), var(--neon-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    /* MAIN VIEW CONTAINER */
+    .view-panel { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding-bottom: 74px; }
+    .view-panel.active { display: flex; }
 
-    .top-actions {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
+    /* 1. CHAT & SEARCH USERS */
+    .search-row { padding: 12px 16px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-line); }
+    .search-row input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border-line); border-radius: 20px; padding: 10px 16px; color: #fff; font-size: 13px; outline: none; }
+    .search-results { max-height: 140px; overflow-y: auto; padding: 0 16px; }
+    .search-user-item { padding: 10px 0; border-bottom: 1px solid var(--border-line); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    
+    .chat-container { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+    .msg-bubble.mine { align-self: flex-end; background: #059669; border-bottom-right-radius: 4px; }
+    .msg-bubble.other { align-self: flex-start; background: var(--panel-bg); border: 1px solid var(--border-line); border-bottom-left-radius: 4px; }
+    .msg-bubble .sender { font-size: 10px; font-weight: 700; color: var(--neon-cyan); margin-bottom: 2px; }
+    .msg-bubble .time { font-size: 9px; opacity: 0.6; margin-top: 4px; text-align: right; }
 
-    .icon-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--glass-border);
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 15px;
-      transition: all 0.2s;
-    }
+    .input-dock { position: absolute; bottom: 70px; left: 0; right: 0; padding: 10px 14px; background: var(--bg-black); border-top: 1px solid var(--border-line); display: flex; gap: 8px; z-index: 30; }
+    .input-dock input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-line); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; }
+    .input-dock button { width: 42px; height: 42px; border-radius: 50%; background: var(--neon-green); border: none; color: #000; font-size: 14px; cursor: pointer; }
 
-    .icon-btn:active {
-      transform: scale(0.92);
-      border-color: var(--neon-emerald);
-    }
+    /* 2. REAL VOOM REELS FEED */
+    .reels-feed { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; }
+    .reel-card { height: calc(100vh - 132px); position: relative; scroll-snap-align: start; background: #000; display: flex; align-items: center; justify-content: center; }
+    .reel-card video { width: 100%; height: 100%; object-fit: cover; }
+    .reel-info { position: absolute; bottom: 20px; left: 16px; z-index: 10; }
+    .reel-uploader { font-weight: 700; font-size: 14px; color: var(--neon-cyan); }
+    .reel-caption { font-size: 12px; margin-top: 4px; color: #fff; }
+    .upload-reel-btn { position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-line); color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; z-index: 10; font-weight: 600; }
 
-    .screen-view {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-      overflow-y: auto;
-      padding-bottom: 84px;
-    }
+    /* 3. SNAPCHAT-LIKE REAL AR LENS */
+    .camera-box { flex: 1; margin: 12px; border-radius: 20px; background: #000; position: relative; overflow: hidden; border: 1px solid var(--border-line); }
+    .camera-box video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .filter-symbol { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 90px; pointer-events: none; }
+    .filter-tray { height: 64px; display: flex; gap: 12px; padding: 0 16px; align-items: center; overflow-x: auto; }
+    .filter-item { width: 46px; height: 46px; border-radius: 50%; background: var(--panel-bg); border: 1px solid var(--border-line); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; flex-shrink: 0; }
 
-    .screen-view.active {
-      display: flex;
-    }
+    /* 4. REAL PROFILE TAB */
+    .profile-card { margin: 20px 16px; background: var(--panel-bg); border: 1px solid var(--border-line); border-radius: 20px; padding: 24px 16px; text-align: center; }
+    .profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan)); display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: #000; margin-bottom: 12px; }
 
-    .stories-rail {
-      display: flex;
-      gap: 14px;
-      padding: 16px 20px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      border-bottom: 1px solid var(--glass-border);
-    }
-
-    .stories-rail::-webkit-scrollbar { display: none; }
-
-    .story-unit {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .story-ring {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      padding: 2.5px;
-      background: linear-gradient(45deg, var(--neon-emerald), var(--neon-cyan));
-    }
-
-    .story-ring.seen {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .story-avatar {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #1e293b;
-      border: 2px solid var(--bg-dark);
-    }
-
-    .story-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      max-width: 60px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow-y: auto;
-    }
-
-    .bubble {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      line-height: 1.5;
-      position: relative;
-    }
-
-    .bubble.received {
-      align-self: flex-start;
-      background: var(--glass-surface);
-      border: 1px solid var(--glass-border);
-      border-bottom-left-radius: 4px;
-    }
-
-    .bubble.sent {
-      align-self: flex-end;
-      background: linear-gradient(135deg, #059669, #10B981);
-      border-bottom-right-radius: 4px;
-      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-    }
-
-    .sender-tag {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--neon-cyan);
-      margin-bottom: 2px;
-    }
-
-    .timestamp {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.6);
-      margin-top: 4px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 4px;
-      align-items: center;
-    }
-
-    .chat-input-bar {
-      position: absolute;
-      bottom: 74px;
-      left: 0;
-      right: 0;
-      padding: 10px 16px;
-      background: rgba(3, 7, 18, 0.85);
-      backdrop-filter: blur(25px);
-      border-top: 1px solid var(--glass-border);
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      z-index: 50;
-    }
-
-    .chat-input-bar input {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-      border-radius: 22px;
-      padding: 12px 18px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .action-circle-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--neon-emerald);
-      border: none;
-      color: #000;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .reels-container {
-      flex: 1;
-      height: calc(100vh - 148px);
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-    }
-
-    .reel-item {
-      height: 100%;
-      position: relative;
-      scroll-snap-align: start;
-      background: #000;
-    }
-
-    .reel-item video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .reel-sidebar {
-      position: absolute;
-      right: 16px;
-      bottom: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .reel-action-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: #fff;
-      font-size: 22px;
-    }
-
-    .ar-lens-viewport {
-      height: calc(100vh - 240px);
-      margin: 14px 16px;
-      border-radius: 24px;
-      background: #000;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid var(--glass-border);
-    }
-
-    .ar-lens-viewport video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-
-    .ar-graphic-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 90px;
-      pointer-events: none;
-    }
-
-    .filters-carousel {
-      height: 70px;
-      display: flex;
-      gap: 12px;
-      padding: 0 20px;
-      align-items: center;
-      overflow-x: auto;
-    }
-
-    .filter-node {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--glass-surface);
-      border: 2px solid var(--glass-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-
-    .filter-node.active {
-      border-color: var(--neon-emerald);
-      box-shadow: 0 0 15px var(--neon-emerald);
-    }
-
-    .call-network-grid {
-      padding: 16px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      flex: 1;
-    }
-
-    .participant-card {
-      aspect-ratio: 0.9;
-      background: var(--glass-surface);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .call-status-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 9px;
-      font-weight: 700;
-      background: rgba(0, 0, 0, 0.4);
-      color: var(--neon-emerald);
-    }
-
-    .crypto-fiat-card {
-      margin: 20px 16px;
-      padding: 24px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
-      border: 1px solid var(--glass-highlight);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
-    }
-
-    .wallet-ops {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      padding: 0 16px 20px;
-    }
-
-    .wallet-op-btn {
-      background: var(--glass-surface);
-      border: 1px solid var(--glass-border);
-      border-radius: 18px;
-      padding: 14px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-
-    .nav-dock {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 74px;
-      background: rgba(3, 7, 18, 0.95);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border-top: 1px solid var(--glass-border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 100;
-    }
-
-    .dock-tab {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      font-size: 10px;
-      font-weight: 700;
-      cursor: pointer;
-      flex: 1;
-      transition: color 0.2s;
-    }
-
-    .dock-tab i {
-      font-size: 18px;
-    }
-
-    .dock-tab.active {
-      color: var(--neon-emerald);
-    }
+    /* BOTTOM NAV */
+    .nav-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 70px; background: var(--bg-black); border-top: 1px solid var(--border-line); display: flex; justify-content: space-around; align-items: center; z-index: 40; }
+    .nav-item { background: none; border: none; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; cursor: pointer; flex: 1; }
+    .nav-item.active { color: var(--neon-green); }
+    .nav-item i { font-size: 18px; }
   </style>
 </head>
 <body>
 
-<div class="app-frame">
-  <div class="top-bar">
-    <div class="brand-logo" id="headerTitle">NineX</div>
-    <div class="top-actions">
-      <div class="icon-btn" onclick="triggerSticker('🔥')"><i class="fa-solid fa-fire"></i></div>
-      <div class="icon-btn" onclick="switchNav('walletTab', document.getElementById('walletDockBtn'), 'NineX Pay')"><i class="fa-solid fa-wallet"></i></div>
+<div class="app-screen">
+  
+  <!-- REAL SIGN UP / LOGIN (NO FAKE LOGIN) -->
+  <div id="authModal">
+    <div class="auth-box">
+      <i class="fa-solid fa-users" style="font-size: 40px; color: var(--neon-green); margin-bottom: 10px;"></i>
+      <h3 id="authHeadline">Join NineX</h3>
+      <p id="authSubtitle" style="font-size: 12px; color: var(--text-sub); margin: 6px 0 18px;">Create your real profile</p>
+      
+      <input type="text" id="regUsername" placeholder="Unique Username (e.g. rahul_99)" />
+      <input type="email" id="authEmail" placeholder="Email Address..." />
+      <input type="password" id="authPassword" placeholder="Password (Min 6 chars)..." />
+      
+      <button onclick="handleAuthAction()" id="authActionButton">Create Account</button>
+      <div id="authAlert" style="color:var(--neon-red); font-size:12px; margin-top:10px; display:none;"></div>
+      <span class="auth-link" id="authSwitchLink" onclick="switchAuthMode()">Already have account? Sign In</span>
     </div>
   </div>
 
-  <!-- 1. LIVE CHATS (POWERED BY FIREBASE REALTIME DB) -->
-  <div id="chatsTab" class="screen-view active">
-    <div class="stories-rail">
-      <div class="story-unit">
-        <div class="story-ring"><img class="story-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" /></div>
-        <span class="story-label">My Story</span>
-      </div>
-      <div class="story-unit">
-        <div class="story-ring seen"><img class="story-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" /></div>
-        <span class="story-label">Alex</span>
-      </div>
-      <div class="story-unit">
-        <div class="story-ring"><img class="story-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" /></div>
-        <span class="story-label">Sarah</span>
-      </div>
-      <div class="story-unit">
-        <div class="story-ring seen"><img class="story-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" /></div>
-        <span class="story-label">Karan</span>
-      </div>
-    </div>
-
-    <div class="chat-messages" id="chatList"></div>
-
-    <div class="chat-input-bar">
-      <div class="icon-btn" onclick="toggleStickers()"><i class="fa-regular fa-face-smile"></i></div>
-      <input type="text" id="userMsgInput" placeholder="Send live message..." onkeydown="if(event.key==='Enter') dispatchMessage()" />
-      <button class="action-circle-btn" onclick="dispatchMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+  <!-- TOP HEADER -->
+  <div class="header-bar">
+    <div class="app-name">NineX</div>
+    <div class="user-pill">
+      <span id="activeUserHeader">Connecting...</span>
+      <i class="fa-solid fa-right-from-bracket" onclick="doSignOut()" style="color:var(--neon-red); cursor:pointer;"></i>
     </div>
   </div>
 
-  <!-- 2. REELS FEED -->
-  <div id="voomTab" class="screen-view">
-    <div class="reels-container">
-      <div class="reel-item">
-        <video loop autoplay muted playsinline src="https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-lights-at-night-42289-large.mp4"></video>
-        <div class="reel-sidebar">
-          <div class="reel-action-btn" onclick="this.style.color='#FF1744'"><i class="fa-solid fa-heart"></i><span>128K</span></div>
-          <div class="reel-action-btn"><i class="fa-solid fa-comment-dots"></i><span>3.4K</span></div>
-          <div class="reel-action-btn"><i class="fa-solid fa-share-nodes"></i><span>Share</span></div>
+  <!-- 1. CHATS & SEARCH TAB -->
+  <div id="chatsTab" class="view-panel active">
+    <!-- Real User Search Bar (Like Instagram) -->
+    <div class="search-row">
+      <input type="text" id="userSearchInput" placeholder="🔍 Search real users by @username..." oninput="searchRealUsers()" />
+    </div>
+    <div class="search-results" id="searchResultsArea" style="display:none;"></div>
+
+    <div class="chat-container" id="chatStreamBox"></div>
+
+    <div class="input-dock">
+      <input type="text" id="chatMsgInput" placeholder="Send live message..." onkeydown="if(event.key==='Enter') sendRealMessage()" />
+      <button onclick="sendRealMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- 2. REAL VOOM REELS (USER UPLOADED) -->
+  <div id="voomTab" class="view-panel">
+    <div style="position:relative; flex:1;">
+      <input type="file" id="reelVideoFileInput" accept="video/*" style="display:none;" onchange="uploadRealReel(event)" />
+      <button class="upload-reel-btn" onclick="document.getElementById('reelVideoFileInput').click()">+ Upload Reel</button>
+      
+      <div class="reels-feed" id="reelsContainer">
+        <div style="padding: 50px 20px; text-align:center; color:var(--text-sub);">
+          <i class="fa-solid fa-film" style="font-size: 36px; margin-bottom: 12px; color:var(--neon-cyan);"></i>
+          <p>No reels yet. Click <b>+ Upload Reel</b> to post the first video!</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 3. AR LENS -->
-  <div id="lensTab" class="screen-view">
-    <div style="padding: 12px 20px 0; display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-weight:700; font-size:13px; color:var(--text-muted);">AR NEURAL LENS</span>
-      <button onclick="bootHardwareCamera()" style="background:var(--neon-emerald); color:#000; border:none; padding:6px 14px; border-radius:12px; font-weight:700; font-size:12px;">Activate</button>
+  <!-- 3. REAL HARDWARE AR LENS (SNAPCHAT CAMERA) -->
+  <div id="lensTab" class="view-panel">
+    <div class="camera-box">
+      <video id="deviceCameraFeed" autoplay playsinline muted></video>
+      <div class="filter-symbol" id="lensOverlaySymbol">👑</div>
     </div>
-    <div class="ar-lens-viewport">
-      <video id="hardwareLens" autoplay playsinline muted></video>
-      <div class="ar-graphic-overlay" id="arElement">🐰</div>
-    </div>
-    <div class="filters-carousel">
-      <div class="filter-node active" onclick="applyFilter('🐰', this)">🐰</div>
-      <div class="filter-node" onclick="applyFilter('🕶️', this)">🕶️</div>
-      <div class="filter-node" onclick="applyFilter('👑', this)">👑</div>
-      <div class="filter-node" onclick="applyFilter('🐯', this)">🐯</div>
-      <div class="filter-node" onclick="applyFilter('⚡', this)">⚡</div>
+    <div class="filter-tray">
+      <div class="filter-item" onclick="chooseFilter('👑')">👑</div>
+      <div class="filter-item" onclick="chooseFilter('🕶️')">🕶️</div>
+      <div class="filter-item" onclick="chooseFilter('🔥')">🔥</div>
+      <div class="filter-item" onclick="chooseFilter('🐯')">🐯</div>
+      <div class="filter-item" onclick="chooseFilter('⚡')">⚡</div>
     </div>
   </div>
 
-  <!-- 4. CALLS -->
-  <div id="callsTab" class="screen-view">
-    <div class="call-network-grid">
-      <div class="participant-card">
-        <span class="call-status-badge">Host</span>
-        <i class="fa-solid fa-user-astronaut" style="font-size: 40px; color: var(--neon-cyan);"></i>
-        <b style="font-size: 13px; margin-top: 10px;">Rameshwar</b>
-      </div>
-      <div class="participant-card">
-        <span class="call-status-badge">HD Audio</span>
-        <i class="fa-solid fa-user-tie" style="font-size: 40px; color: var(--neon-emerald);"></i>
-        <b style="font-size: 13px; margin-top: 10px;">Sarah</b>
-      </div>
-      <div class="participant-card">
-        <span class="call-status-badge">Active</span>
-        <i class="fa-solid fa-user-ninja" style="font-size: 40px; color: #a855f7;"></i>
-        <b style="font-size: 13px; margin-top: 10px;">Alex</b>
-      </div>
-      <div class="participant-card">
-        <span class="call-status-badge">Connected</span>
-        <i class="fa-solid fa-user-secret" style="font-size: 40px; color: #f59e0b;"></i>
-        <b style="font-size: 13px; margin-top: 10px;">Nova</b>
+  <!-- 4. REAL USER PROFILE (NO FAKE DATA) -->
+  <div id="profileTab" class="view-panel">
+    <div class="profile-card">
+      <div class="profile-avatar" id="avatarInitial">U</div>
+      <h3 id="profileFullName">Username</h3>
+      <p id="profileUserHandle" style="color:var(--neon-cyan); font-size:13px; margin: 4px 0 16px;">@username</p>
+      
+      <div style="display:flex; justify-content:space-around; border-top:1px solid var(--border-line); padding-top:14px;">
+        <div><b id="userPostCount">0</b><div style="font-size:11px; color:var(--text-sub);">Reels</div></div>
+        <div><b>100%</b><div style="font-size:11px; color:var(--text-sub);">Verified</div></div>
+        <div><b>Live</b><div style="font-size:11px; color:var(--neon-green);">Online</div></div>
       </div>
     </div>
   </div>
 
-  <!-- 5. WALLET -->
-  <div id="walletTab" class="screen-view">
-    <div class="crypto-fiat-card">
-      <span style="font-size: 12px; font-weight:600; color: var(--text-muted);">NineX Pay Account</span>
-      <h2 style="font-size: 34px; font-weight: 800; margin: 10px 0 20px;">₹ 45,850.00</h2>
-      <div style="display:flex; gap:10px;">
-        <button style="flex:1; padding:12px; background:var(--neon-emerald); color:#000; border:none; border-radius:14px; font-weight:700; font-size:13px;">Transfer</button>
-        <button style="flex:1; padding:12px; background:rgba(255,255,255,0.1); color:#fff; border:none; border-radius:14px; font-weight:700; font-size:13px;">Request</button>
-      </div>
-    </div>
-    <div class="wallet-ops">
-      <div class="wallet-op-btn"><i class="fa-solid fa-qrcode" style="font-size:18px; color:var(--neon-cyan);"></i>Scan QR</div>
-      <div class="wallet-op-btn"><i class="fa-solid fa-credit-card" style="font-size:18px; color:var(--neon-emerald);"></i>Cards</div>
-      <div class="wallet-op-btn"><i class="fa-solid fa-bolt" style="font-size:18px; color:#eab308;"></i>Bills</div>
-      <div class="wallet-op-btn"><i class="fa-solid fa-gift" style="font-size:18px; color:var(--neon-rose);"></i>Rewards</div>
-    </div>
-  </div>
-
-  <div class="nav-dock">
-    <button class="dock-tab active" onclick="switchNav('chatsTab', this, 'NineX')"><i class="fa-solid fa-comments"></i>Chats</button>
-    <button class="dock-tab" onclick="switchNav('voomTab', this, 'VOOM Feed')"><i class="fa-solid fa-play"></i>VOOM</button>
-    <button class="dock-tab" onclick="switchNav('lensTab', this, 'AR Lens')"><i class="fa-solid fa-camera"></i>Lens</button>
-    <button class="dock-tab" onclick="switchNav('callsTab', this, 'Encrypted Calls')"><i class="fa-solid fa-phone"></i>Calls</button>
-    <button class="dock-tab" id="walletDockBtn" onclick="switchNav('walletTab', this, 'NineX Pay')"><i class="fa-solid fa-wallet"></i>Pay</button>
+  <!-- BOTTOM NAVIGATION -->
+  <div class="nav-bar">
+    <button class="nav-item active" onclick="navigateTab('chatsTab', this)"><i class="fa-solid fa-comments"></i>Chat</button>
+    <button class="nav-item" onclick="navigateTab('voomTab', this)"><i class="fa-solid fa-play"></i>VOOM</button>
+    <button class="nav-item" onclick="navigateTab('lensTab', this)"><i class="fa-solid fa-camera"></i>Lens</button>
+    <button class="nav-item" onclick="navigateTab('profileTab', this)"><i class="fa-solid fa-user"></i>Profile</button>
   </div>
 </div>
 
 <script>
-  // Real Firebase Realtime Database Configuration
+  // Firebase Live Credentials
   const firebaseConfig = {
     apiKey: "AIzaSyAkOC-P2vyQ9c8t0ZekGjSA3YXLbvSvK6M",
     authDomain: "ninex-messenger.firebaseapp.com",
@@ -596,106 +207,238 @@
   };
 
   firebase.initializeApp(firebaseConfig);
-  const dbRef = firebase.database().ref("live_messages");
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-  // Device User ID
-  let myUserId = localStorage.getItem('nx_uid');
-  if(!myUserId) {
-    myUserId = 'User_' + Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem('nx_uid', myUserId);
+  let isRegistering = true;
+  let currentUser = null;
+  let allRegisteredUsers = {};
+
+  // 1. Auth Mode Toggle
+  function switchAuthMode() {
+    isRegistering = !isRegistering;
+    document.getElementById('authHeadline').innerText = isRegistering ? 'Join NineX' : 'Welcome Back';
+    document.getElementById('authSubtitle').innerText = isRegistering ? 'Create your real profile' : 'Sign in to your account';
+    document.getElementById('authActionButton').innerText = isRegistering ? 'Create Account' : 'Sign In';
+    document.getElementById('authSwitchLink').innerText = isRegistering ? 'Already have account? Sign In' : "New here? Create account";
+    document.getElementById('regUsername').style.display = isRegistering ? 'block' : 'none';
+    document.getElementById('authAlert').style.display = 'none';
   }
 
-  // Realtime Live Messages Sync
-  dbRef.limitToLast(50).on('value', (snapshot) => {
-    const list = document.getElementById('chatList');
-    list.innerHTML = '';
-    const messages = snapshot.val();
-    if(messages) {
-      Object.keys(messages).forEach((key) => {
-        const data = messages[key];
-        const isMe = data.senderId === myUserId;
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `bubble ${isMe ? 'sent' : 'received'}`;
+  // 2. Real Registration & Login
+  async function handleAuthAction() {
+    const email = document.getElementById('authEmail').value.trim();
+    const pass = document.getElementById('authPassword').value.trim();
+    const uname = document.getElementById('regUsername').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    const alertBox = document.getElementById('authAlert');
+
+    if(!email || !pass) {
+      alertBox.innerText = "Please enter email and password";
+      alertBox.style.display = 'block';
+      return;
+    }
+
+    try {
+      if(isRegistering) {
+        if(!uname) { alertBox.innerText = "Please enter a valid username"; alertBox.style.display='block'; return; }
+        const res = await auth.createUserWithEmailAndPassword(email, pass);
+        await res.user.updateProfile({ displayName: uname });
         
-        if (data.type === 'sticker') {
-          msgDiv.innerHTML = `<div style="font-size: 50px;">${data.text}</div>`;
-        } else {
-          msgDiv.innerHTML = `
-            ${!isMe ? `<div class="sender-tag">${data.senderName}</div>` : ''}
-            <div>${data.text}</div>
-            <div class="timestamp">${data.time || ''} ${isMe ? '<i class="fa-solid fa-check-double"></i>' : ''}</div>
-          `;
-        }
-        list.appendChild(msgDiv);
-      });
-      list.scrollTop = list.scrollHeight;
+        // Save unique user to database for real search
+        await db.ref("users/" + res.user.uid).set({
+          uid: res.user.uid,
+          username: uname,
+          email: email,
+          createdAt: Date.now()
+        });
+      } else {
+        await auth.signInWithEmailAndPassword(email, pass);
+      }
+      alertBox.style.display = 'none';
+    } catch(e) {
+      alertBox.innerText = e.message;
+      alertBox.style.display = 'block';
+    }
+  }
+
+  function doSignOut() {
+    if(confirm("Sign out of NineX?")) {
+      auth.signOut();
+    }
+  }
+
+  // 3. Auth Listener
+  auth.onAuthStateChanged((user) => {
+    if(user) {
+      currentUser = user;
+      document.getElementById('authModal').style.display = 'none';
+      const uName = user.displayName || user.email.split('@')[0];
+      
+      document.getElementById('activeUserHeader').innerText = '@' + uName;
+      document.getElementById('profileFullName').innerText = uName;
+      document.getElementById('profileUserHandle').innerText = '@' + uName;
+      document.getElementById('avatarInitial').innerText = uName[0].toUpperCase();
+
+      loadRealChats();
+      loadRealUsers();
+      loadRealReels();
+    } else {
+      currentUser = null;
+      document.getElementById('authModal').style.display = 'flex';
     }
   });
 
-  // Real Send Message
-  function dispatchMessage() {
-    const field = document.getElementById('userMsgInput');
-    const content = field.value.trim();
-    if (!content) return;
-
-    field.value = '';
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-    dbRef.push({
-      text: content,
-      senderId: myUserId,
-      senderName: myUserId,
-      type: 'text',
-      time: timeStr,
-      timestamp: Date.now()
+  // 4. Real User Search (Like Instagram)
+  function loadRealUsers() {
+    db.ref("users").on("value", (snap) => {
+      allRegisteredUsers = snap.val() || {};
     });
   }
 
-  // Real Send Sticker
-  function triggerSticker(sym) {
-    dbRef.push({
-      text: sym,
-      senderId: myUserId,
-      senderName: myUserId,
-      type: 'sticker',
-      timestamp: Date.now()
-    });
-  }
-
-  function toggleStickers() {
-    const pool = ['🔥', '⚡', '👑', '🚀', '🎉', '💎'];
-    triggerSticker(pool[Math.floor(Math.random() * pool.length)]);
-  }
-
-  function switchNav(paneId, btnEl, titleText) {
-    document.querySelectorAll('.screen-view').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.dock-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById(paneId).classList.add('active');
-    btnEl.classList.add('active');
-    document.getElementById('headerTitle').innerText = titleText;
-
-    if(paneId === 'lensTab') {
-      bootHardwareCamera();
+  function searchRealUsers() {
+    const q = document.getElementById('userSearchInput').value.trim().toLowerCase().replace('@', '');
+    const container = document.getElementById('searchResultsArea');
+    
+    if(!q) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+      return;
     }
+
+    container.innerHTML = '';
+    let found = false;
+    Object.keys(allRegisteredUsers).forEach((uid) => {
+      const u = allRegisteredUsers[uid];
+      if(u.username && u.username.includes(q)) {
+        found = true;
+        const row = document.createElement('div');
+        row.className = 'search-user-item';
+        row.innerHTML = `
+          <div><b>@${u.username}</b> <span style="font-size:11px; opacity:0.6;">(${u.email})</span></div>
+          <button style="background:var(--neon-green); color:#000; border:none; padding:4px 10px; border-radius:10px; font-weight:700; font-size:11px;" onclick="startChatWith('${u.username}')">Chat</button>
+        `;
+        container.appendChild(row);
+      }
+    });
+
+    container.style.display = found ? 'block' : 'none';
   }
 
-  async function bootHardwareCamera() {
-    const video = document.getElementById('hardwareLens');
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  function startChatWith(targetName) {
+    document.getElementById('searchResultsArea').style.display = 'none';
+    document.getElementById('chatMsgInput').value = `@${targetName} `;
+    document.getElementById('chatMsgInput').focus();
+  }
+
+  // 5. Real Chat Sync
+  function loadRealChats() {
+    db.ref("live_messages").limitToLast(50).on("value", (snap) => {
+      const box = document.getElementById('chatStreamBox');
+      box.innerHTML = '';
+      const list = snap.val();
+      if(list) {
+        Object.keys(list).forEach(k => {
+          const m = list[k];
+          const isMe = currentUser && m.senderUid === currentUser.uid;
+          const div = document.createElement('div');
+          div.className = `msg-bubble ${isMe ? 'mine' : 'other'}`;
+          div.innerHTML = `
+            ${!isMe ? `<div class="sender">@${m.username}</div>` : ''}
+            <div>${m.text}</div>
+            <div class="time">${m.time || ''}</div>
+          `;
+          box.appendChild(div);
+        });
+        box.scrollTop = box.scrollHeight;
+      }
+    });
+  }
+
+  function sendRealMessage() {
+    if(!currentUser) return;
+    const input = document.getElementById('chatMsgInput');
+    const txt = input.value.trim();
+    if(!txt) return;
+
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    db.ref("live_messages").push({
+      senderUid: currentUser.uid,
+      username: currentUser.displayName || 'user',
+      text: txt,
+      time: time,
+      timestamp: Date.now()
+    });
+    input.value = '';
+  }
+
+  // 6. Real Reels Upload & Feed
+  function uploadRealReel(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 15 * 1024 * 1024) { alert("Video size limit: 15MB"); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const videoBase64 = evt.target.result;
+      db.ref("reels").push({
+        uploaderUid: currentUser.uid,
+        uploaderName: currentUser.displayName || 'user',
+        videoData: videoBase64,
+        timestamp: Date.now()
+      });
+      alert("Reel posted successfully!");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function loadRealReels() {
+    db.ref("reels").limitToLast(20).on("value", (snap) => {
+      const container = document.getElementById('reelsContainer');
+      const reels = snap.val();
+      if(reels) {
+        container.innerHTML = '';
+        Object.keys(reels).reverse().forEach(k => {
+          const r = reels[k];
+          const card = document.createElement('div');
+          card.className = 'reel-card';
+          card.innerHTML = `
+            <video src="${r.videoData}" loop autoplay playsinline muted></video>
+            <div class="reel-info">
+              <div class="reel-uploader">@${r.uploaderName}</div>
+              <div class="reel-caption">Original Video Reel</div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+    });
+  }
+
+  // 7. Snapchat Style Real Front Camera & Lens
+  async function activateRealCamera() {
+    const v = document.getElementById('deviceCameraFeed');
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-        video.srcObject = stream;
-      } catch (err) {
-        console.warn('Camera wrapper check.');
+        v.srcObject = stream;
+      } catch(e) {
+        alert("Camera permission error: " + e.message);
       }
     }
   }
 
-  function applyFilter(sym, node) {
-    document.querySelectorAll('.filter-node').forEach(n => n.classList.remove('active'));
-    node.classList.add('active');
-    document.getElementById('arElement').innerText = sym;
+  function chooseFilter(sym) {
+    document.getElementById('lensOverlaySymbol').innerText = sym;
+  }
+
+  // Navigation
+  function navigateTab(tabId, el) {
+    document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    el.classList.add('active');
+
+    if(tabId === 'lensTab') activateRealCamera();
   }
 </script>
 </body>
