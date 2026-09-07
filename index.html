@@ -3,444 +3,259 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>NineX - Social Ecosystem</title>
+  <title>NineX Pro Social</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Firebase Official SDKs -->
+  <!-- Firebase Core SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     :root {
-      --bg-dark: #000000;
-      --card-bg: #121212;
-      --card-border: #262626;
-      --insta-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-      --accent-neon: #00E676;
-      --accent-cyan: #00E5FF;
-      --text-pri: #ffffff;
-      --text-sec: #a8a8a8;
-      --bubble-me: #3797f0;
-      --bubble-them: #262626;
+      --bg-pure: #000000;
+      --surface: #121212;
+      --border-dark: #262626;
+      --insta-pink: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      --accent-blue: #0095f6;
+      --text-high: #ffffff;
+      --text-low: #a8a8a8;
+      --bubble-self: #3797f0;
+      --bubble-peer: #262626;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #000; color: var(--text-high); height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
 
-    body {
-      background: #000;
-      color: var(--text-pri);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
+    .app-screen { width: 100vw; height: 100vh; max-width: 440px; position: relative; background: var(--bg-pure); display: flex; flex-direction: column; overflow: hidden; }
 
-    .app-viewport {
-      width: 100vw;
-      height: 100vh;
-      max-width: 440px;
-      position: relative;
-      background: var(--bg-dark);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border-left: 1px solid var(--card-border);
-      border-right: 1px solid var(--card-border);
-    }
+    /* AUTH OVERLAY */
+    #authOverlay { position: absolute; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; z-index: 2000; }
+    .brand-wordmark { font-size: 34px; font-weight: 800; letter-spacing: -1px; background: var(--insta-pink); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px; }
+    .auth-input-group { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .auth-field { background: #1a1a1a; border: 1px solid var(--border-dark); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 13.5px; outline: none; }
+    .btn-submit { background: var(--accent-blue); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn-google { background: #fff; color: #000; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
 
-    /* AUTH OVERLAY (INSTAGRAM STYLE LOGIN & GOOGLE AUTH) */
-    #authOverlay {
-      position: absolute;
-      inset: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      z-index: 1000;
-    }
-    .insta-logo-text {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: var(--insta-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 24px;
-    }
-    .auth-card {
-      width: 100%;
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .auth-input {
-      width: 100%;
-      background: #121212;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 12px 14px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .auth-input:focus { border-color: #555; }
-    .primary-btn {
-      width: 100%;
-      background: #3797f0;
-      color: #fff;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .google-btn {
-      width: 100%;
-      background: #ffffff;
-      color: #000;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    .divider-row {
-      display: flex;
-      align-items: center;
-      margin: 8px 0;
-      color: var(--text-sec);
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .divider-row::before, .divider-row::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: var(--card-border);
-    }
-    .divider-row span { padding: 0 10px; }
+    /* TOP BAR */
+    .app-header { height: 50px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dark); background: rgba(0,0,0,0.9); z-index: 100; }
+    .header-logo { font-size: 22px; font-weight: 800; background: var(--insta-pink); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-actions { display: flex; gap: 18px; font-size: 20px; align-items: center; }
 
-    /* HEADER */
-    .top-nav {
-      height: 54px;
-      padding: 0 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--card-border);
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(15px);
-      z-index: 50;
-    }
-    .nav-brand {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: var(--insta-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .nav-icons { display: flex; gap: 18px; font-size: 20px; align-items: center; }
+    /* VIEW PANELS */
+    .view-page { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding-bottom: 56px; }
+    .view-page.active { display: flex; }
 
-    /* MAIN TABS */
-    .screen-panel {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-      overflow-y: auto;
-      padding-bottom: 60px;
-    }
-    .screen-panel.active { display: flex; }
+    /* 1. HOME FEED (INSTAGRAM POSTS) */
+    .stories-tray { display: flex; gap: 14px; padding: 12px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border-dark); }
+    .stories-tray::-webkit-scrollbar { display: none; }
+    .story-ring-wrap { width: 62px; height: 62px; border-radius: 50%; padding: 2.5px; background: var(--insta-pink); display: flex; align-items: center; justify-content: center; }
+    .story-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #262626; border: 2px solid #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
+    
+    .feed-container { display: flex; flex-direction: column; }
+    .post-card { border-bottom: 1px solid var(--border-dark); margin-bottom: 14px; }
+    .post-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; }
+    .post-user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; }
+    .post-media-box { width: 100%; min-height: 280px; max-height: 440px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .post-media-box img, .post-media-box video { width: 100%; height: auto; max-height: 440px; object-fit: contain; }
+    .post-engagements { padding: 10px 14px; display: flex; gap: 16px; font-size: 20px; }
+    .post-caption-block { padding: 0 14px 12px; font-size: 13px; line-height: 1.4; }
+    .post-caption-block b { font-weight: 700; margin-right: 6px; }
 
-    /* STORIES & FEED */
-    .stories-container {
-      display: flex;
-      gap: 14px;
-      padding: 12px 16px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      border-bottom: 1px solid var(--card-border);
-    }
-    .stories-container::-webkit-scrollbar { display: none; }
-    .story-node { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .story-circle {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      padding: 2.5px;
-      background: var(--insta-gradient);
-    }
-    .story-img-placeholder {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: #262626;
-      border: 2px solid #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .story-title { font-size: 11px; color: var(--text-sec); max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* 2. DIRECT MESSAGES (DM MODAL) */
+    #directMessageModal { position: absolute; inset: 0; background: #000; z-index: 300; display: none; flex-direction: column; }
+    .dm-header { height: 50px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dark); }
+    .dm-search-bar { padding: 10px 14px; border-bottom: 1px solid var(--border-dark); }
+    .dm-search-bar input { width: 100%; background: #1c1c1c; border: none; padding: 9px 14px; border-radius: 18px; color: #fff; font-size: 13px; outline: none; }
+    .dm-list { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+    .dm-bubble { max-width: 78%; padding: 10px 14px; border-radius: 18px; font-size: 13.5px; line-height: 1.4; }
+    .dm-bubble.mine { align-self: flex-end; background: var(--bubble-self); border-bottom-right-radius: 4px; }
+    .dm-bubble.theirs { align-self: flex-start; background: var(--bubble-peer); border-bottom-left-radius: 4px; }
 
-    /* SEARCH BAR */
-    .search-wrap { padding: 10px 16px; border-bottom: 1px solid var(--card-border); }
-    .search-input-field {
-      width: 100%;
-      background: #1e1e1e;
-      border: 1px solid var(--card-border);
-      padding: 9px 16px;
-      border-radius: 20px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-    }
+    /* 3. REAL HARDWARE CAMERA */
+    .cam-layout { flex: 1; position: relative; background: #000; display: flex; flex-direction: column; }
+    .cam-view-window { flex: 1; position: relative; overflow: hidden; }
+    .cam-view-window video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .cam-hud-filter { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 90px; pointer-events: none; }
+    .cam-controls-panel { height: 110px; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; }
+    .cam-shutter-ring { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #fff; padding: 3px; cursor: pointer; }
+    .cam-shutter-circle { width: 100%; height: 100%; border-radius: 50%; background: #fff; }
 
-    /* DIRECT CHATS */
-    .messages-stream { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
-    .chat-bubble { max-width: 75%; padding: 10px 14px; border-radius: 20px; font-size: 13.5px; line-height: 1.4; word-break: break-word; }
-    .chat-bubble.mine { align-self: flex-end; background: var(--bubble-me); color: #fff; border-bottom-right-radius: 4px; }
-    .chat-bubble.theirs { align-self: flex-start; background: var(--bubble-them); color: #fff; border-bottom-left-radius: 4px; }
-    .bubble-author { font-size: 10px; font-weight: 700; color: #00E5FF; margin-bottom: 2px; }
-    .bubble-meta { font-size: 9px; opacity: 0.7; margin-top: 4px; text-align: right; }
+    /* 4. REELS (VOOM) */
+    .reels-feed-frame { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; }
+    .reel-stage { height: calc(100vh - 106px); scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+    .reel-stage video { width: 100%; height: 100%; object-fit: cover; }
+    .reel-overlay-details { position: absolute; bottom: 20px; left: 16px; z-index: 10; }
 
-    .bottom-input-bar {
-      position: absolute;
-      bottom: 58px;
-      left: 0;
-      right: 0;
-      padding: 8px 12px;
-      background: #000;
-      border-top: 1px solid var(--card-border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 30;
-    }
-    .bottom-input-bar input {
-      flex: 1;
-      background: #1e1e1e;
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 9px 16px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-    }
-    .send-msg-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #3797f0;
-      border: none;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
+    /* 5. PROFILE & SETTINGS DRAWER */
+    .profile-wrap { padding: 20px 16px; }
+    .profile-top-grid { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .profile-stats-hub { display: flex; gap: 24px; text-align: center; }
+    .profile-stats-hub b { font-size: 16px; display: block; }
+    .profile-stats-hub span { font-size: 12px; color: var(--text-low); }
+    
+    #settingsDrawer { position: absolute; top: 0; right: -100%; width: 75%; height: 100%; background: #121212; border-left: 1px solid var(--border-dark); z-index: 1500; transition: right 0.3s ease; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; }
+    #settingsDrawer.open { right: 0; }
+    .drawer-item { display: flex; align-items: center; gap: 14px; padding: 12px 8px; font-size: 14px; border-bottom: 1px solid var(--border-dark); cursor: pointer; }
 
-    /* VOOM REELS FEED */
-    .reels-feed-box { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; }
-    .reel-slot { height: calc(100vh - 114px); position: relative; scroll-snap-align: start; background: #000; display: flex; align-items: center; justify-content: center; }
-    .reel-slot video { width: 100%; height: 100%; object-fit: cover; }
-    .reel-meta-info { position: absolute; bottom: 20px; left: 16px; z-index: 10; }
-    .reel-meta-user { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-
-    /* HARDWARE CAMERA */
-    .lens-viewport { flex: 1; margin: 12px; border-radius: 22px; background: #000; position: relative; overflow: hidden; border: 1px solid var(--card-border); }
-    .lens-viewport video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    .lens-overlay-emoji { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 90px; pointer-events: none; }
-    .lens-dock { height: 60px; display: flex; gap: 12px; padding: 0 16px; align-items: center; overflow-x: auto; }
-    .lens-picker-btn { width: 44px; height: 44px; border-radius: 50%; background: #1a1a1a; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; flex-shrink: 0; }
-
-    /* REAL PROFILE */
-    .user-profile-view { padding: 24px 16px; display: flex; flex-direction: column; align-items: center; }
-    .main-avatar-circle { width: 80px; height: 80px; border-radius: 50%; padding: 3px; background: var(--insta-gradient); margin-bottom: 12px; }
-    .main-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #121212; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; border: 2px solid #000; }
-    .stat-row { display: flex; justify-content: space-around; width: 100%; margin: 20px 0; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); padding: 12px 0; }
-    .stat-node { text-align: center; }
-    .stat-node b { font-size: 16px; display: block; }
-    .stat-node span { font-size: 12px; color: var(--text-sec); }
-
-    /* BOTTOM DOCK */
-    .app-dock {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 56px;
-      background: #000;
-      border-top: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 50;
-    }
-    .dock-action {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      transition: transform 0.15s;
-    }
-    .dock-action.active { color: #3797f0; }
-    .dock-action:active { transform: scale(0.85); }
+    /* BOTTOM NAV */
+    .dock-menu { position: absolute; bottom: 0; left: 0; right: 0; height: 54px; background: #000; border-top: 1px solid var(--border-dark); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+    .dock-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .dock-btn.active { color: var(--accent-blue); }
   </style>
 </head>
 <body>
 
-<div class="app-viewport">
+<div class="app-screen">
+  
+  <canvas id="hiddenCanvas" style="display:none;"></canvas>
 
-  <!-- AUTHENTICATION SCREEN -->
+  <!-- AUTHENTICATION -->
   <div id="authOverlay">
-    <div class="insta-logo-text">NineX</div>
-    
-    <div class="auth-card">
-      <button class="google-btn" onclick="signInWithGoogle()">
+    <div class="brand-wordmark">NineX</div>
+    <div class="auth-input-group">
+      <button class="btn-google" onclick="triggerGoogleAuth()">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="G" />
         Continue with Google
       </button>
-
-      <div class="divider-row"><span>OR</span></div>
-
-      <input type="text" id="inputUsername" class="auth-input" placeholder="Username (e.g. rahul_99)" />
-      <input type="email" id="inputEmail" class="auth-input" placeholder="Email" />
-      <input type="password" id="inputPassword" class="auth-input" placeholder="Password" />
-
-      <button class="primary-btn" id="submitAuthBtn" onclick="handleEmailAuth()">Sign Up</button>
-      
-      <div id="authErrorDisplay" style="color:#ff3b30; font-size:12px; text-align:center; display:none;"></div>
-      
-      <p style="font-size: 12px; color: var(--text-sec); text-align: center; margin-top: 10px; cursor:pointer;" id="switchModeTxt" onclick="toggleAuthScreens()">
-        Already have an account? <b style="color:#3797f0;">Log In</b>
+      <div style="display:flex; align-items:center; gap:8px; color:var(--text-low); font-size:11px; margin:6px 0;">
+        <div style="flex:1; height:1px; background:var(--border-dark);"></div>OR<div style="flex:1; height:1px; background:var(--border-dark);"></div>
+      </div>
+      <input type="text" id="signUsername" class="auth-field" placeholder="Username (e.g. rameshwar_01)" />
+      <input type="email" id="signEmail" class="auth-field" placeholder="Email" />
+      <input type="password" id="signPass" class="auth-field" placeholder="Password (Min 6 chars)" />
+      <button class="btn-submit" id="authSubmitAction" onclick="submitAuth()">Sign Up</button>
+      <div id="authNotice" style="color:#ff3b30; font-size:12px; text-align:center; display:none;"></div>
+      <p style="font-size:12px; color:var(--text-low); text-align:center; margin-top:8px; cursor:pointer;" id="authSwitchPrompt" onclick="flipAuth()">
+        Already have an account? <b style="color:var(--accent-blue);">Log In</b>
       </p>
     </div>
   </div>
 
   <!-- TOP APP HEADER -->
-  <div class="top-nav">
-    <div class="nav-brand">NineX</div>
-    <div class="nav-icons">
-      <i class="fa-regular fa-heart" onclick="alert('No new notifications')"></i>
-      <i class="fa-solid fa-arrow-right-from-bracket" onclick="logUserOut()" title="Logout" style="font-size: 17px; opacity:0.8;"></i>
+  <div class="app-header">
+    <div class="header-logo">NineX</div>
+    <div class="header-actions">
+      <input type="file" id="feedImgPicker" accept="image/*" style="display:none;" onchange="publishRealPost(event)" />
+      <i class="fa-regular fa-square-plus" onclick="document.getElementById('feedImgPicker').click()" title="Create Post"></i>
+      <i class="fa-regular fa-paper-plane" onclick="openDirectMessages()" title="Direct Messages"></i>
     </div>
   </div>
 
-  <!-- 1. LIVE CHAT & SEARCH TAB -->
-  <div id="chatsTab" class="screen-panel active">
-    <!-- Stories Carousel -->
-    <div class="stories-container" id="storiesRow">
-      <div class="story-node">
-        <div class="story-circle"><div class="story-img-placeholder" id="myStoryIcon">+</div></div>
-        <span class="story-title">Your Story</span>
+  <!-- 1. HOME POSTS FEED -->
+  <div id="homeTab" class="view-page active">
+    <div class="stories-tray" id="storiesHolder">
+      <div class="story-ring-wrap" onclick="alert('Tap the Camera tab below to capture your Story!')">
+        <div class="story-avatar-inner" id="currentUserStoryBadge">+</div>
       </div>
     </div>
-
-    <!-- Search Users -->
-    <div class="search-wrap">
-      <input type="text" id="liveUserSearch" class="search-input-field" placeholder="🔍 Search real users..." oninput="filterRealUsers()" />
-    </div>
-    <div id="searchResultsList" style="display:none; max-height:120px; overflow-y:auto; padding:0 16px; border-bottom:1px solid var(--card-border);"></div>
-
-    <!-- Live Messages -->
-    <div class="messages-stream" id="messagesStream"></div>
-
-    <!-- Compose -->
-    <div class="bottom-input-bar">
-      <input type="text" id="msgInputField" placeholder="Message..." onkeydown="if(event.key==='Enter') pushNewMessage()" />
-      <button class="send-msg-btn" onclick="pushNewMessage()"><i class="fa-solid fa-arrow-up"></i></button>
-    </div>
-  </div>
-
-  <!-- 2. REAL VOOM REELS FEED -->
-  <div id="voomTab" class="screen-panel">
-    <div style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center; background:#000;">
-      <span style="font-weight:700; font-size:14px;">Reels</span>
-      <input type="file" id="reelVideoInput" accept="video/*" style="display:none;" onchange="handleReelUpload(event)" />
-      <button onclick="document.getElementById('reelVideoInput').click()" style="background:#3797f0; color:#fff; border:none; padding:6px 14px; border-radius:16px; font-weight:700; font-size:12px; cursor:pointer;">+ Post Reel</button>
-    </div>
-    <div class="reels-feed-box" id="reelsFeed">
-      <div style="padding:60px 20px; text-align:center; color:var(--text-sec);">
-        <i class="fa-solid fa-clapperboard" style="font-size:36px; margin-bottom:12px; color:#3797f0;"></i>
-        <p>No reels yet. Be the first to share one!</p>
+    <div class="feed-container" id="timelineFeed">
+      <div style="padding:60px 20px; text-align:center; color:var(--text-low);">
+        <i class="fa-solid fa-camera" style="font-size:38px; margin-bottom:12px; color:var(--accent-blue);"></i>
+        <p>No posts yet! Tap <b>+</b> at the top to publish your first photo.</p>
       </div>
     </div>
   </div>
 
-  <!-- 3. REAL HARDWARE LENS (SNAPCHAT-STYLE CAMERA) -->
-  <div id="lensTab" class="screen-panel">
-    <div class="lens-viewport">
-      <video id="cameraElement" autoplay playsinline muted></video>
-      <div class="lens-overlay-emoji" id="activeEmojiFilter">👑</div>
-    </div>
-    <div class="lens-dock">
-      <div class="lens-picker-btn" onclick="setLens('👑')">👑</div>
-      <div class="lens-picker-btn" onclick="setLens('🕶️')">🕶️</div>
-      <div class="lens-picker-btn" onclick="setLens('🔥')">🔥</div>
-      <div class="lens-picker-btn" onclick="setLens('🐯')">🐯</div>
-      <div class="lens-picker-btn" onclick="setLens('⚡')">⚡</div>
+  <!-- 2. REELS (VOOM) -->
+  <div id="reelsTab" class="view-page">
+    <div class="reels-feed-frame" id="reelsViewStack">
+      <div style="padding:60px 20px; text-align:center; color:var(--text-low);">
+        <i class="fa-solid fa-film" style="font-size:38px; margin-bottom:12px; color:#ff3b30;"></i>
+        <p>No Reels yet. Capture one via Camera!</p>
+      </div>
     </div>
   </div>
 
-  <!-- 4. REAL PROFILE TAB -->
-  <div id="profileTab" class="screen-panel">
-    <div class="user-profile-view">
-      <div class="main-avatar-circle">
-        <div class="main-avatar-inner" id="profileBadge">U</div>
+  <!-- 3. REAL HARDWARE CAMERA -->
+  <div id="cameraTab" class="view-page">
+    <div class="cam-layout">
+      <div class="cam-view-window">
+        <video id="hardwareLens" autoplay playsinline muted></video>
+        <div class="cam-hud-filter" id="filterLayer">👑</div>
       </div>
-      <h3 id="profileNameDisplay">Username</h3>
-      <p id="profileHandleDisplay" style="color:var(--text-sec); font-size:13px; margin-top:2px;">@username</p>
-      
-      <div class="stat-row">
-        <div class="stat-node"><b id="postsNum">0</b><span>Posts</span></div>
-        <div class="stat-node"><b>100%</b><span>Secure</span></div>
-        <div class="stat-node"><b style="color:var(--accent-neon);">Online</b><span>Status</span></div>
+      <div style="display:flex; justify-content:center; gap:16px; padding:8px 0; background:#000;">
+        <span onclick="setFilter('👑')" style="font-size:24px; cursor:pointer;">👑</span>
+        <span onclick="setFilter('🕶️')" style="font-size:24px; cursor:pointer;">🕶️</span>
+        <span onclick="setFilter('🔥')" style="font-size:24px; cursor:pointer;">🔥</span>
+        <span onclick="setFilter('🐯')" style="font-size:24px; cursor:pointer;">🐯</span>
       </div>
-
-      <button onclick="logUserOut()" style="width:100%; max-width:240px; background:#262626; color:#ff3b30; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">Log Out</button>
+      <div class="cam-controls-panel">
+        <div class="cam-shutter-ring" onclick="captureAndSharePhoto()">
+          <div class="cam-shutter-circle"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION DOCK -->
-  <div class="app-dock">
-    <button class="dock-action active" onclick="switchTab('chatsTab', this)"><i class="fa-solid fa-house"></i></button>
-    <button class="dock-action" onclick="switchTab('voomTab', this)"><i class="fa-solid fa-play"></i></button>
-    <button class="dock-action" onclick="switchTab('lensTab', this)"><i class="fa-solid fa-camera"></i></button>
-    <button class="dock-action" onclick="switchTab('profileTab', this)"><i class="fa-regular fa-user"></i></button>
+  <!-- 4. PROFILE TAB -->
+  <div id="profileTab" class="view-page">
+    <div class="profile-wrap">
+      <div class="profile-top-grid">
+        <div class="story-ring-wrap" style="width:74px; height:74px;">
+          <div class="story-avatar-inner" id="profileBadgeLetter" style="font-size:28px;">U</div>
+        </div>
+        <div class="profile-stats-hub">
+          <div><b id="userPostStat">0</b><span>Posts</span></div>
+          <div><b>142</b><span>Followers</span></div>
+          <div><b>89</b><span>Following</span></div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 id="profileNameHeadline" style="font-size:16px;">Full Name</h3>
+          <p id="profileHandleSub" style="color:var(--text-low); font-size:13px;">@username</p>
+        </div>
+        <i class="fa-solid fa-bars" onclick="toggleSettingsDrawer(true)" style="font-size:22px; cursor:pointer;"></i>
+      </div>
+      <button style="width:100%; background:#262626; color:#fff; border:none; padding:8px; border-radius:8px; font-weight:700; margin-top:16px;" onclick="alert('Profile is synced with Firebase.')">Edit Profile</button>
+    </div>
+  </div>
+
+  <!-- DIRECT MESSAGES OVERLAY -->
+  <div id="directMessageModal">
+    <div class="dm-header">
+      <i class="fa-solid fa-arrow-left" onclick="closeDirectMessages()" style="cursor:pointer; font-size:18px;"></i>
+      <b>Direct Messages</b>
+      <span style="width:18px;"></span>
+    </div>
+    <div class="dm-search-bar">
+      <input type="text" id="searchUserInput" placeholder="🔍 Search username to message..." oninput="queryAppUsers()" />
+    </div>
+    <div id="dmSearchResults" style="display:none; padding:10px 16px; border-bottom:1px solid var(--border-dark);"></div>
+    <div class="dm-list" id="dmChatContainer"></div>
+    <div style="padding:10px; background:#000; border-top:1px solid var(--border-dark); display:flex; gap:8px;">
+      <input type="text" id="dmMsgField" placeholder="Type a message..." style="flex:1; background:#1c1c1c; border:none; padding:10px 16px; border-radius:20px; color:#fff; outline:none;" onkeydown="if(event.key==='Enter') transmitMessage()" />
+      <button onclick="transmitMessage()" style="width:40px; height:40px; border-radius:50%; background:var(--accent-blue); border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- THREE DOTS / SETTINGS DRAWER -->
+  <div id="settingsDrawer">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <b>Settings & Activity</b>
+      <i class="fa-solid fa-xmark" onclick="toggleSettingsDrawer(false)" style="font-size:20px; cursor:pointer;"></i>
+    </div>
+    <div class="drawer-item"><i class="fa-solid fa-lock"></i> Account Privacy</div>
+    <div class="drawer-item"><i class="fa-regular fa-bookmark"></i> Saved Posts</div>
+    <div class="drawer-item"><i class="fa-solid fa-moon"></i> Dark Theme (Active)</div>
+    <div class="drawer-item" onclick="handleLogout()" style="color:#ff3b30;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</div>
+  </div>
+
+  <!-- DOCK NAVIGATION -->
+  <div class="dock-menu">
+    <button class="dock-btn active" onclick="switchPage('homeTab', this)"><i class="fa-solid fa-house"></i></button>
+    <button class="dock-btn" onclick="switchPage('reelsTab', this)"><i class="fa-solid fa-play"></i></button>
+    <button class="dock-btn" onclick="switchPage('cameraTab', this)"><i class="fa-solid fa-camera"></i></button>
+    <button class="dock-btn" onclick="switchPage('profileTab', this)"><i class="fa-regular fa-user"></i></button>
   </div>
 </div>
 
 <script>
-  // 100% Verified Firebase Configuration
+  // Real Validated Firebase Credentials
   const firebaseConfig = {
     apiKey: "AIzaSyAkCC-P2VyQ9c8tGZakGjSA3YXLbvSvV5M",
     authDomain: "ninex-messenger.firebaseapp.com",
@@ -456,246 +271,313 @@
   const auth = firebase.auth();
   const db = firebase.database();
 
-  let isRegister = true;
-  let activeUser = null;
-  let registeredDirectory = {};
+  let activeSessionUser = null;
+  let isRegisterMode = true;
+  let cachedUsers = {};
 
   // Auth Toggle
-  function toggleAuthScreens() {
-    isRegister = !isRegister;
-    document.getElementById('inputUsername').style.display = isRegister ? 'block' : 'none';
-    document.getElementById('submitAuthBtn').innerText = isRegister ? 'Sign Up' : 'Log In';
-    document.getElementById('switchModeTxt').innerHTML = isRegister ? 
-      'Already have an account? <b style="color:#3797f0;">Log In</b>' : 
-      'Don\'t have an account? <b style="color:#3797f0;">Sign Up</b>';
-    document.getElementById('authErrorDisplay').style.display = 'none';
+  function flipAuth() {
+    isRegisterMode = !isRegisterMode;
+    document.getElementById('signUsername').style.display = isRegisterMode ? 'block' : 'none';
+    document.getElementById('authSubmitAction').innerText = isRegisterMode ? 'Sign Up' : 'Log In';
+    document.getElementById('authSwitchPrompt').innerHTML = isRegisterMode ? 
+      'Already have an account? <b style="color:var(--accent-blue);">Log In</b>' : 
+      'Don\'t have an account? <b style="color:var(--accent-blue);">Sign Up</b>';
+    document.getElementById('authNotice').style.display = 'none';
   }
 
-  // Google Sign-In
-  async function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
+  // Google Sign In
+  async function triggerGoogleAuth() {
     try {
-      const res = await auth.signInWithPopup(provider);
-      const user = res.user;
-      await db.ref("users/" + user.uid).update({
-        uid: user.uid,
-        username: user.displayName.replace(/\s+/g, '').toLowerCase(),
-        email: user.email,
-        lastSeen: Date.now()
+      const p = new firebase.auth.GoogleAuthProvider();
+      const cred = await auth.signInWithPopup(p);
+      await db.ref("users/" + cred.user.uid).update({
+        uid: cred.user.uid,
+        username: cred.user.displayName.replace(/\s+/g, '').toLowerCase(),
+        name: cred.user.displayName,
+        email: cred.user.email
       });
-    } catch(err) {
-      showAuthError(err.message);
-    }
+    } catch(err) { displayAuthErr(err.message); }
   }
 
   // Email / Password Auth
-  async function handleEmailAuth() {
-    const email = document.getElementById('inputEmail').value.trim();
-    const pass = document.getElementById('inputPassword').value.trim();
-    const uname = document.getElementById('inputUsername').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  async function submitAuth() {
+    const e = document.getElementById('signEmail').value.trim();
+    const p = document.getElementById('signPass').value.trim();
+    const u = document.getElementById('signUsername').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
 
-    if(!email || !pass) {
-      showAuthError("Please enter email and password");
-      return;
-    }
-
+    if(!e || !p) { displayAuthErr("Please provide email and password"); return; }
     try {
-      if(isRegister) {
-        if(!uname) { showAuthError("Choose a username"); return; }
-        const res = await auth.createUserWithEmailAndPassword(email, pass);
-        await res.user.updateProfile({ displayName: uname });
-        await db.ref("users/" + res.user.uid).set({
-          uid: res.user.uid,
-          username: uname,
-          email: email,
-          createdAt: Date.now()
+      if(isRegisterMode) {
+        if(!u) { displayAuthErr("Please enter a username"); return; }
+        const r = await auth.createUserWithEmailAndPassword(e, p);
+        await r.user.updateProfile({ displayName: u });
+        await db.ref("users/" + r.user.uid).set({
+          uid: r.user.uid,
+          username: u,
+          name: u,
+          email: e,
+          timestamp: Date.now()
         });
       } else {
-        await auth.signInWithEmailAndPassword(email, pass);
+        await auth.signInWithEmailAndPassword(e, p);
       }
-    } catch(err) {
-      showAuthError(err.message);
+    } catch(err) { displayAuthErr(err.message); }
+  }
+
+  function displayAuthErr(m) {
+    const el = document.getElementById('authNotice');
+    el.innerText = m;
+    el.style.display = 'block';
+  }
+
+  function handleLogout() {
+    if(confirm("Log out of NineX?")) {
+      toggleSettingsDrawer(false);
+      auth.signOut();
     }
   }
 
-  function showAuthError(msg) {
-    const b = document.getElementById('authErrorDisplay');
-    b.innerText = msg;
-    b.style.display = 'block';
-  }
-
-  function logUserOut() {
-    if(confirm("Log out of NineX?")) auth.signOut();
-  }
-
-  // Real-Time Auth State
+  // Auth State Listener
   auth.onAuthStateChanged((user) => {
     if(user) {
-      activeUser = user;
+      activeSessionUser = user;
       document.getElementById('authOverlay').style.display = 'none';
-      const handle = user.displayName || user.email.split('@')[0];
+      const uTag = user.displayName || user.email.split('@')[0];
       
-      document.getElementById('profileNameDisplay').innerText = handle;
-      document.getElementById('profileHandleDisplay').innerText = '@' + handle;
-      document.getElementById('profileBadge').innerText = handle[0].toUpperCase();
-      document.getElementById('myStoryIcon').innerText = handle[0].toUpperCase();
+      document.getElementById('currentUserStoryBadge').innerText = uTag[0].toUpperCase();
+      document.getElementById('profileBadgeLetter').innerText = uTag[0].toUpperCase();
+      document.getElementById('profileNameHeadline').innerText = uTag;
+      document.getElementById('profileHandleSub').innerText = '@' + uTag;
 
-      syncLiveChats();
-      fetchDirectory();
-      syncVoomReels();
+      startFeedSync();
+      startDirectChatSync();
+      fetchUsersDirectory();
     } else {
-      activeUser = null;
+      activeSessionUser = null;
       document.getElementById('authOverlay').style.display = 'flex';
     }
   });
 
-  // User Search
-  function fetchDirectory() {
-    db.ref("users").on("value", snap => {
-      registeredDirectory = snap.val() || {};
-    });
-  }
-
-  function filterRealUsers() {
-    const query = document.getElementById('liveUserSearch').value.trim().toLowerCase().replace('@', '');
-    const wrap = document.getElementById('searchResultsList');
-    if(!query) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
-
-    wrap.innerHTML = '';
-    let hasMatch = false;
-    Object.keys(registeredDirectory).forEach(uid => {
-      const u = registeredDirectory[uid];
-      if(u.username && u.username.includes(query)) {
-        hasMatch = true;
-        const div = document.createElement('div');
-        div.style.padding = '8px 0';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.style.alignItems = 'center';
-        div.innerHTML = `
-          <div><b>@${u.username}</b> <span style="font-size:11px; opacity:0.6;">(${u.email})</span></div>
-          <button style="background:#3797f0; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-weight:700; font-size:11px;" onclick="selectRecipient('${u.username}')">Message</button>
-        `;
-        wrap.appendChild(div);
-      }
-    });
-    wrap.style.display = hasMatch ? 'block' : 'none';
-  }
-
-  function selectRecipient(name) {
-    document.getElementById('searchResultsList').style.display = 'none';
-    const field = document.getElementById('msgInputField');
-    field.value = `@${name} `;
-    field.focus();
-  }
-
-  // Realtime Live Messages
-  function syncLiveChats() {
-    db.ref("live_messages").limitToLast(50).on("value", snap => {
-      const pane = document.getElementById('messagesStream');
-      pane.innerHTML = '';
-      const list = snap.val();
-      if(list) {
-        Object.keys(list).forEach(id => {
-          const item = list[id];
-          const isMine = activeUser && item.senderUid === activeUser.uid;
-          const bubble = document.createElement('div');
-          bubble.className = `chat-bubble ${isMine ? 'mine' : 'theirs'}`;
-          bubble.innerHTML = `
-            ${!isMine ? `<div class="bubble-author">@${item.username}</div>` : ''}
-            <div>${item.text}</div>
-            <div class="bubble-meta">${item.time || ''}</div>
-          `;
-          pane.appendChild(bubble);
-        });
-        pane.scrollTop = pane.scrollHeight;
-      }
-    });
-  }
-
-  function pushNewMessage() {
-    if(!activeUser) return;
-    const input = document.getElementById('msgInputField');
-    const txt = input.value.trim();
-    if(!txt) return;
-
-    const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    db.ref("live_messages").push({
-      senderUid: activeUser.uid,
-      username: activeUser.displayName || 'user',
-      text: txt,
-      time: timeString,
-      timestamp: Date.now()
-    });
-    input.value = '';
-  }
-
-  // Real Reels Feed
-  function handleReelUpload(e) {
-    const file = e.target.files[0];
-    if(!file) return;
-    if(file.size > 15 * 1024 * 1024) { alert("Max video size: 15MB"); return; }
+  // 1. IMAGE COMPRESSION & PUBLISH REAL POST
+  function publishRealPost(event) {
+    const file = event.target.files[0];
+    if(!file || !activeSessionUser) return;
 
     const reader = new FileReader();
-    reader.onload = function(evt) {
-      db.ref("reels").push({
-        uploaderUid: activeUser.uid,
-        username: activeUser.displayName || 'user',
-        videoData: evt.target.result,
-        timestamp: Date.now()
-      });
-      alert("Reel shared successfully!");
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        // Compress using Canvas so size stays under 300KB
+        const canvas = document.getElementById('hiddenCanvas');
+        const ctx = canvas.getContext('2d');
+        const maxDim = 900;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) { height *= maxDim / width; width = maxDim; }
+        } else {
+          if (height > maxDim) { width *= maxDim / height; height = maxDim; }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+
+        const caption = prompt("Write a caption for your post:") || "";
+        db.ref("posts").push({
+          authorUid: activeSessionUser.uid,
+          authorName: activeSessionUser.displayName || 'user',
+          mediaUrl: compressedData,
+          caption: caption,
+          likes: 0,
+          timestamp: Date.now()
+        });
+        alert("Post uploaded successfully!");
+      };
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  function syncVoomReels() {
-    db.ref("reels").limitToLast(15).on("value", snap => {
-      const feed = document.getElementById('reelsFeed');
-      const all = snap.val();
-      if(all) {
+  function startFeedSync() {
+    db.ref("posts").limitToLast(20).on("value", (snapshot) => {
+      const feed = document.getElementById('timelineFeed');
+      const posts = snapshot.val();
+      if(posts) {
         feed.innerHTML = '';
-        Object.keys(all).reverse().forEach(key => {
-          const item = all[key];
-          const node = document.createElement('div');
-          node.className = 'reel-slot';
-          node.innerHTML = `
-            <video src="${item.videoData}" loop autoplay playsinline muted></video>
-            <div class="reel-meta-info">
-              <div class="reel-meta-user">@${item.username}</div>
+        let myPostCount = 0;
+        Object.keys(posts).reverse().forEach((key) => {
+          const p = posts[key];
+          if(activeSessionUser && p.authorUid === activeSessionUser.uid) myPostCount++;
+          const card = document.createElement('div');
+          card.className = 'post-card';
+          card.innerHTML = `
+            <div class="post-header">
+              <div class="post-user-info">
+                <div class="story-ring-wrap" style="width:34px; height:34px; padding:1.5px;">
+                  <div class="story-avatar-inner" style="font-size:12px;">${p.authorName[0].toUpperCase()}</div>
+                </div>
+                <span>${p.authorName}</span>
+              </div>
+              <i class="fa-solid fa-ellipsis"></i>
+            </div>
+            <div class="post-media-box">
+              <img src="${p.mediaUrl}" alt="Post Media" />
+            </div>
+            <div class="post-engagements">
+              <i class="fa-regular fa-heart" onclick="this.className=this.className.includes('solid')?'fa-regular fa-heart':'fa-solid fa-heart'; this.style.color=this.className.includes('solid')?'#ff3b30':'#fff';"></i>
+              <i class="fa-regular fa-comment"></i>
+              <i class="fa-regular fa-paper-plane"></i>
+            </div>
+            <div class="post-caption-block">
+              <b>${p.authorName}</b> ${p.caption}
             </div>
           `;
-          feed.appendChild(node);
+          feed.appendChild(card);
         });
+        document.getElementById('userPostStat').innerText = myPostCount;
       }
     });
   }
 
-  // Real Camera Hardware
-  async function launchRealCamera() {
-    const v = document.getElementById('cameraElement');
+  // 2. HARDWARE CAMERA
+  async function igniteCamera() {
+    const video = document.getElementById('hardwareLens');
     if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-        v.srcObject = stream;
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false
+        });
+        video.srcObject = stream;
       } catch(err) {
-        console.warn('Camera wrapper check:', err.message);
+        alert("Camera error: Allow camera permissions in App Settings.");
       }
     }
   }
 
-  function setLens(sym) {
-    document.getElementById('activeEmojiFilter').innerText = sym;
+  function setFilter(icon) {
+    document.getElementById('filterLayer').innerText = icon;
   }
 
-  // Navigation
-  function switchTab(tabId, el) {
-    document.querySelectorAll('.screen-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.dock-action').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    el.classList.add('active');
+  function captureAndSharePhoto() {
+    const video = document.getElementById('hardwareLens');
+    const canvas = document.getElementById('hiddenCanvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw flipped for front camera
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    const snap = canvas.toDataURL('image/jpeg', 0.8);
+    if(confirm("Share this photo to Feed?")) {
+      db.ref("posts").push({
+        authorUid: activeSessionUser.uid,
+        authorName: activeSessionUser.displayName || 'user',
+        mediaUrl: snap,
+        caption: "Captured via NineX Neural Lens " + document.getElementById('filterLayer').innerText,
+        timestamp: Date.now()
+      });
+      switchPage('homeTab', document.querySelectorAll('.dock-btn')[0]);
+    }
+  }
 
-    if(tabId === 'lensTab') launchRealCamera();
+  // 3. DIRECT MESSAGES
+  function openDirectMessages() {
+    document.getElementById('directMessageModal').style.display = 'flex';
+  }
+  function closeDirectMessages() {
+    document.getElementById('directMessageModal').style.display = 'none';
+  }
+
+  function fetchUsersDirectory() {
+    db.ref("users").on("value", snap => { cachedUsers = snap.val() || {}; });
+  }
+
+  function queryAppUsers() {
+    const query = document.getElementById('searchUserInput').value.trim().toLowerCase().replace('@','');
+    const out = document.getElementById('dmSearchResults');
+    if(!query) { out.style.display = 'none'; return; }
+    out.innerHTML = '';
+    let match = false;
+    Object.keys(cachedUsers).forEach(uid => {
+      const u = cachedUsers[uid];
+      if(u.username && u.username.includes(query)) {
+        match = true;
+        const d = document.createElement('div');
+        d.style.padding = '8px 0';
+        d.style.display = 'flex';
+        d.style.justifyContent = 'space-between';
+        d.innerHTML = `<span>@${u.username}</span> <button style="background:var(--accent-blue); color:#fff; border:none; padding:4px 10px; border-radius:12px; font-size:11px;" onclick="chooseChat('${u.username}')">Chat</button>`;
+        out.appendChild(d);
+      }
+    });
+    out.style.display = match ? 'block' : 'none';
+  }
+
+  function chooseChat(uname) {
+    document.getElementById('dmSearchResults').style.display = 'none';
+    document.getElementById('dmMsgField').value = `@${uname} `;
+    document.getElementById('dmMsgField').focus();
+  }
+
+  function transmitMessage() {
+    if(!activeSessionUser) return;
+    const inp = document.getElementById('dmMsgField');
+    const text = inp.value.trim();
+    if(!text) return;
+    
+    db.ref("live_messages").push({
+      senderUid: activeSessionUser.uid,
+      senderName: activeSessionUser.displayName || 'user',
+      text: text,
+      timestamp: Date.now()
+    });
+    inp.value = '';
+  }
+
+  function startDirectChatSync() {
+    db.ref("live_messages").limitToLast(50).on("value", snap => {
+      const box = document.getElementById('dmChatContainer');
+      box.innerHTML = '';
+      const list = snap.val();
+      if(list) {
+        Object.keys(list).forEach(k => {
+          const m = list[k];
+          const isMine = activeSessionUser && m.senderUid === activeSessionUser.uid;
+          const bubble = document.createElement('div');
+          bubble.className = `dm-bubble ${isMine ? 'mine' : 'theirs'}`;
+          bubble.innerHTML = `
+            ${!isMine ? `<div style="font-size:10px; color:var(--accent-blue); font-weight:700;">@${m.senderName}</div>` : ''}
+            <div>${m.text}</div>
+          `;
+          box.appendChild(bubble);
+        });
+        box.scrollTop = box.scrollHeight;
+      }
+    });
+  }
+
+  // 4. NAVIGATION & DRAWER
+  function toggleSettingsDrawer(open) {
+    document.getElementById('settingsDrawer').className = open ? 'open' : '';
+  }
+
+  function switchPage(pageId, btn) {
+    document.querySelectorAll('.view-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    btn.classList.add('active');
+
+    if(pageId === 'cameraTab') {
+      igniteCamera();
+    }
   }
 </script>
 </body>
