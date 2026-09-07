@@ -29,9 +29,11 @@ jobs:
 
     - name: Initialize Android App Engine
       run: |
+        mkdir -p www
+        cp index.html www/
         npm init -y
         npm install @capacitor/core @capacitor/cli @capacitor/android
-        npx cap init "NineX" "com.ninex.app" --web-dir "."
+        npx cap init "NineX" "com.ninex.app" --web-dir "www"
         npx cap add android
         npx cap sync android
 
