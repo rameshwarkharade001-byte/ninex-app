@@ -3,125 +3,666 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>NineX Messenger</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <title>NineX Ecosystem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     :root {
-      --bg: #070A13;
-      --surface: #0E1626;
-      --card: rgba(22, 34, 56, 0.7);
-      --primary: #00E676;
-      --accent: #2979FF;
-      --text: #F8FAFC;
-      --text-dim: #94A3B8;
-      --border: rgba(255, 255, 255, 0.08);
+      --bg-dark: #030712;
+      --glass-surface: rgba(17, 24, 39, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-highlight: rgba(255, 255, 255, 0.15);
+      --neon-emerald: #00E676;
+      --neon-cyan: #00E5FF;
+      --neon-rose: #FF1744;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --app-font: 'Plus Jakarta Sans', -apple-system, sans-serif;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-    .screen { width: 100vw; height: 100vh; max-width: 480px; display: flex; flex-direction: column; background: var(--bg); position: relative; }
-    
-    .header { padding: 18px 20px; background: rgba(14, 22, 38, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-    .header h1 { font-size: 22px; font-weight: 800; letter-spacing: 1px; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    .view-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding-bottom: 140px; }
-    .tab-view { display: none; flex-direction: column; height: 100%; }
-    .tab-view.active { display: flex; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--app-font);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    .chat-body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-    .bubble { max-width: 78%; padding: 12px 16px; border-radius: 20px; font-size: 14.5px; line-height: 1.4; }
-    .bubble.in { background: var(--card); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
-    .bubble.out { background: linear-gradient(135deg, #00C853, #009624); align-self: flex-end; border-bottom-right-radius: 4px; color: #FFF; box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3); }
-    .sticker { font-size: 65px; align-self: flex-start; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-    .dock { position: absolute; bottom: 72px; left: 0; right: 0; padding: 12px 16px; background: rgba(14, 22, 38, 0.95); backdrop-filter: blur(20px); display: flex; gap: 10px; border-top: 1px solid var(--border); }
-    .dock input { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 30px; padding: 12px 20px; color: #FFF; font-size: 14px; outline: none; }
-    .dock button { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--primary); color: #000; font-size: 18px; font-weight: bold; cursor: pointer; }
+    .app-frame {
+      width: 100vw;
+      height: 100vh;
+      max-width: 440px;
+      position: relative;
+      background: radial-gradient(circle at 10% 10%, #064e3b20 0%, transparent 40%),
+                  radial-gradient(circle at 90% 90%, #0284c720 0%, transparent 40%),
+                  var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-    .call-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
-    .call-card { aspect-ratio: 1; background: var(--card); border-radius: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
-    .call-avatar { font-size: 45px; }
+    /* Premium Top Bar */
+    .top-bar {
+      height: 64px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--glass-surface);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-bottom: 1px solid var(--glass-border);
+      z-index: 100;
+    }
 
-    .navbar { position: absolute; bottom: 0; left: 0; right: 0; height: 72px; background: rgba(7, 10, 19, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; }
-    .nav-item { background: none; border: none; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; cursor: pointer; }
-    .nav-item.active { color: var(--primary); }
+    .brand-logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, var(--neon-emerald), var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      border-color: var(--neon-emerald);
+    }
+
+    /* Screen Panes */
+    .screen-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      padding-bottom: 84px;
+    }
+
+    .screen-view.active {
+      display: flex;
+    }
+
+    /* LINE VOOM Stories Rail */
+    .stories-rail {
+      display: flex;
+      gap: 14px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .stories-rail::-webkit-scrollbar { display: none; }
+
+    .story-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .story-ring {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      padding: 2.5px;
+      background: linear-gradient(45deg, var(--neon-emerald), var(--neon-cyan));
+    }
+
+    .story-ring.seen {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .story-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #1e293b;
+      border: 2px solid var(--bg-dark);
+    }
+
+    .story-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      max-width: 60px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    /* Chat Channel */
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 14px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .bubble.received {
+      align-self: flex-start;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-bottom-left-radius: 4px;
+      backdrop-filter: blur(15px);
+    }
+
+    .bubble.sent {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #059669, #10B981);
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+    }
+
+    .timestamp {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+      align-items: center;
+    }
+
+    /* Frosted Input Bar */
+    .chat-input-bar {
+      position: absolute;
+      bottom: 74px;
+      left: 0;
+      right: 0;
+      padding: 10px 16px;
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(25px);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .chat-input-bar input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      padding: 12px 18px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .chat-input-bar input:focus {
+      border-color: var(--neon-emerald);
+    }
+
+    .action-circle-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--neon-emerald);
+      border: none;
+      color: #000;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Video Reels Tab (LINE VOOM) */
+    .reels-container {
+      flex: 1;
+      height: calc(100vh - 148px);
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+
+    .reel-item {
+      height: 100%;
+      position: relative;
+      scroll-snap-align: start;
+      background: #000;
+    }
+
+    .reel-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .reel-sidebar {
+      position: absolute;
+      right: 16px;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .reel-action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #fff;
+      font-size: 22px;
+    }
+
+    .reel-action-btn span {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* AR Camera Panel */
+    .ar-lens-viewport {
+      height: calc(100vh - 240px);
+      margin: 14px 16px;
+      border-radius: 24px;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+    }
+
+    .ar-lens-viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .ar-graphic-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 90px;
+      pointer-events: none;
+    }
+
+    .filters-carousel {
+      height: 70px;
+      display: flex;
+      gap: 12px;
+      padding: 0 20px;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .filter-node {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--glass-surface);
+      border: 2px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .filter-node.active {
+      border-color: var(--neon-emerald);
+      box-shadow: 0 0 15px var(--neon-emerald);
+    }
+
+    /* Calls UI */
+    .call-network-grid {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .participant-card {
+      aspect-ratio: 0.9;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .call-status-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--neon-emerald);
+    }
+
+    /* Wallet (LINE Pay) */
+    .crypto-fiat-card {
+      margin: 20px 16px;
+      padding: 24px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+      border: 1px solid var(--glass-highlight);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+    }
+
+    .wallet-ops {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 0 16px 20px;
+    }
+
+    .wallet-op-btn {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 14px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* Global Bottom Tab Bar */
+    .nav-dock {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 74px;
+      background: rgba(3, 7, 18, 0.95);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .dock-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+      transition: color 0.2s;
+    }
+
+    .dock-tab i {
+      font-size: 18px;
+    }
+
+    .dock-tab.active {
+      color: var(--neon-emerald);
+    }
   </style>
 </head>
 <body>
 
-<div class="screen">
-  <div class="header">
-    <h1>NINEX</h1>
-    <div onclick="addSticker()" style="font-size: 22px; cursor: pointer;">✨🔥</div>
-  </div>
-
-  <div class="view-container">
-    <div id="chatsView" class="tab-view active">
-      <div class="chat-body" id="chatList">
-        <div class="bubble in">Welcome to NineX Messenger! 🚀</div>
-        <div class="bubble out">Performance and UI look ultra premium! 🔥</div>
-      </div>
-      <div class="dock">
-        <input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') send()" />
-        <button onclick="send()">➤</button>
-      </div>
-    </div>
-
-    <div id="callsView" class="tab-view">
-      <div style="padding: 20px 16px 5px; font-weight: 700; color: var(--text-dim); font-size: 13px;">ACTIVE SECURE CALLS</div>
-      <div class="call-grid">
-        <div class="call-card"><div class="call-avatar">👨‍💻</div><b>Rameshwar</b></div>
-        <div class="call-card"><div class="call-avatar">🚀</div><b>Alex</b></div>
-        <div class="call-card"><div class="call-avatar">🎧</div><b>Sarah</b></div>
-        <div class="call-card"><div class="call-avatar">⚡</div><b>Nova</b></div>
-      </div>
+<div class="app-frame">
+  <!-- Dynamic Top Bar -->
+  <div class="top-bar">
+    <div class="brand-logo" id="headerTitle">NineX</div>
+    <div class="top-actions">
+      <div class="icon-btn" onclick="triggerSticker('🔥')"><i class="fa-solid fa-fire"></i></div>
+      <div class="icon-btn" onclick="switchNav('walletTab', document.getElementById('walletDockBtn'), 'NineX Pay')"><i class="fa-solid fa-wallet"></i></div>
     </div>
   </div>
 
-  <div class="navbar">
-    <button class="nav-item active" onclick="switchTab('chatsView', this)"><span>💬</span>CHATS</button>
-    <button class="nav-item" onclick="switchTab('callsView', this)"><span>📞</span>CALLS</button>
+  <!-- 1. CHATS PANE (With Stories Rail) -->
+  <div id="chatsTab" class="screen-view active">
+    <div class="stories-rail">
+      <div class="story-unit">
+        <div class="story-ring"><img class="story-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" /></div>
+        <span class="story-label">My Story</span>
+      </div>
+      <div class="story-unit">
+        <div class="story-ring seen"><img class="story-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" /></div>
+        <span class="story-label">Alex</span>
+      </div>
+      <div class="story-unit">
+        <div class="story-ring"><img class="story-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" /></div>
+        <span class="story-label">Sarah</span>
+      </div>
+      <div class="story-unit">
+        <div class="story-ring seen"><img class="story-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" /></div>
+        <span class="story-label">Karan</span>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatList">
+      <div class="bubble received">
+        Welcome to NineX Messenger. Encrypted & Cloud Synchronized.
+        <div class="timestamp">09:41 AM</div>
+      </div>
+      <div class="bubble sent">
+        The luxury glassmorphic architecture looks unbelievable!
+        <div class="timestamp">09:42 AM <i class="fa-solid fa-check-double"></i></div>
+      </div>
+    </div>
+
+    <div class="chat-input-bar">
+      <div class="icon-btn" onclick="toggleStickers()"><i class="fa-regular fa-face-smile"></i></div>
+      <input type="text" id="userMsgInput" placeholder="Type an encrypted message..." onkeydown="if(event.key==='Enter') dispatchMessage()" />
+      <button class="action-circle-btn" onclick="dispatchMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- 2. LINE VOOM (SHORTS/REELS) -->
+  <div id="voomTab" class="screen-view">
+    <div class="reels-container">
+      <div class="reel-item">
+        <video loop autoplay muted playsinline src="https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-lights-at-night-42289-large.mp4"></video>
+        <div class="reel-sidebar">
+          <div class="reel-action-btn" onclick="this.style.color='#FF1744'"><i class="fa-solid fa-heart"></i><span>128K</span></div>
+          <div class="reel-action-btn"><i class="fa-solid fa-comment-dots"></i><span>3.4K</span></div>
+          <div class="reel-action-btn"><i class="fa-solid fa-share-nodes"></i><span>Share</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. AR LENS CAMERA -->
+  <div id="lensTab" class="screen-view">
+    <div style="padding: 12px 20px 0; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-weight:700; font-size:13px; color:var(--text-muted);">AR NEURAL LENS</span>
+      <button onclick="bootHardwareCamera()" style="background:var(--neon-emerald); color:#000; border:none; padding:6px 14px; border-radius:12px; font-weight:700; font-size:12px;">Activate</button>
+    </div>
+    <div class="ar-lens-viewport">
+      <video id="hardwareLens" autoplay playsinline muted></video>
+      <div class="ar-graphic-overlay" id="arElement">🐰</div>
+    </div>
+    <div class="filters-carousel">
+      <div class="filter-node active" onclick="applyFilter('🐰', this)">🐰</div>
+      <div class="filter-node" onclick="applyFilter('🕶️', this)">🕶️</div>
+      <div class="filter-node" onclick="applyFilter('👑', this)">👑</div>
+      <div class="filter-node" onclick="applyFilter('🐯', this)">🐯</div>
+      <div class="filter-node" onclick="applyFilter('⚡', this)">⚡</div>
+    </div>
+  </div>
+
+  <!-- 4. SECURE CALLS -->
+  <div id="callsTab" class="screen-view">
+    <div class="call-network-grid">
+      <div class="participant-card">
+        <span class="call-status-badge">Host</span>
+        <i class="fa-solid fa-user-astronaut" style="font-size: 40px; color: var(--neon-cyan);"></i>
+        <b style="font-size: 13px; margin-top: 10px;">Rameshwar</b>
+      </div>
+      <div class="participant-card">
+        <span class="call-status-badge">HD Audio</span>
+        <i class="fa-solid fa-user-tie" style="font-size: 40px; color: var(--neon-emerald);"></i>
+        <b style="font-size: 13px; margin-top: 10px;">Sarah</b>
+      </div>
+      <div class="participant-card">
+        <span class="call-status-badge">Active</span>
+        <i class="fa-solid fa-user-ninja" style="font-size: 40px; color: #a855f7;"></i>
+        <b style="font-size: 13px; margin-top: 10px;">Alex</b>
+      </div>
+      <div class="participant-card">
+        <span class="call-status-badge">Connected</span>
+        <i class="fa-solid fa-user-secret" style="font-size: 40px; color: #f59e0b;"></i>
+        <b style="font-size: 13px; margin-top: 10px;">Nova</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. WALLET & PAY -->
+  <div id="walletTab" class="screen-view">
+    <div class="crypto-fiat-card">
+      <span style="font-size: 12px; font-weight:600; color: var(--text-muted);">NineX Pay Account</span>
+      <h2 style="font-size: 34px; font-weight: 800; margin: 10px 0 20px;">₹ 45,850.00</h2>
+      <div style="display:flex; gap:10px;">
+        <button style="flex:1; padding:12px; background:var(--neon-emerald); color:#000; border:none; border-radius:14px; font-weight:700; font-size:13px;">Transfer</button>
+        <button style="flex:1; padding:12px; background:rgba(255,255,255,0.1); color:#fff; border:none; border-radius:14px; font-weight:700; font-size:13px;">Request</button>
+      </div>
+    </div>
+    <div class="wallet-ops">
+      <div class="wallet-op-btn"><i class="fa-solid fa-qrcode" style="font-size:18px; color:var(--neon-cyan);"></i>Scan QR</div>
+      <div class="wallet-op-btn"><i class="fa-solid fa-credit-card" style="font-size:18px; color:var(--neon-emerald);"></i>Cards</div>
+      <div class="wallet-op-btn"><i class="fa-solid fa-bolt" style="font-size:18px; color:#eab308;"></i>Bills</div>
+      <div class="wallet-op-btn"><i class="fa-solid fa-gift" style="font-size:18px; color:var(--neon-rose);"></i>Rewards</div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Dock -->
+  <div class="nav-dock">
+    <button class="dock-tab active" onclick="switchNav('chatsTab', this, 'NineX')"><i class="fa-solid fa-comments"></i>Chats</button>
+    <button class="dock-tab" onclick="switchNav('voomTab', this, 'VOOM Feed')"><i class="fa-solid fa-play"></i>VOOM</button>
+    <button class="dock-tab" onclick="switchNav('lensTab', this, 'AR Lens')"><i class="fa-solid fa-camera"></i>Lens</button>
+    <button class="dock-tab" onclick="switchNav('callsTab', this, 'Encrypted Calls')"><i class="fa-solid fa-phone"></i>Calls</button>
+    <button class="dock-tab" id="walletDockBtn" onclick="switchNav('walletTab', this, 'NineX Pay')"><i class="fa-solid fa-wallet"></i>Pay</button>
   </div>
 </div>
 
 <script>
-  function switchTab(viewId, el) {
-    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    el.classList.add('active');
+  function switchNav(paneId, btnEl, titleText) {
+    document.querySelectorAll('.screen-view').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.dock-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(paneId).classList.add('active');
+    btnEl.classList.add('active');
+    document.getElementById('headerTitle').innerText = titleText;
+
+    if(paneId === 'lensTab') {
+      bootHardwareCamera();
+    }
   }
 
-  function send() {
-    const box = document.getElementById('chatInput');
-    const val = box.value.trim();
-    if (!val) return;
-    const list = document.getElementById('chatList');
-    
-    const out = document.createElement('div');
-    out.className = 'bubble out';
-    out.innerText = val;
-    list.appendChild(out);
-    box.value = '';
-    list.scrollTop = list.scrollHeight;
+  function dispatchMessage() {
+    const field = document.getElementById('userMsgInput');
+    const content = field.value.trim();
+    if (!content) return;
 
-    setTimeout(() => {
-      const rep = document.createElement('div');
-      rep.className = 'bubble in';
-      rep.innerText = "Message received via NineX encrypted server! ✅";
-      list.appendChild(rep);
-      list.scrollTop = list.scrollHeight;
-    }, 500);
+    const list = document.getElementById('chatList');
+    const msg = document.createElement('div');
+    msg.className = 'bubble sent';
+    msg.innerHTML = `${content}<div class="timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} <i class="fa-solid fa-check"></i></div>`;
+    list.appendChild(msg);
+    field.value = '';
+    list.scrollTop = list.scrollHeight;
   }
 
-  function addSticker() {
+  function triggerSticker(sym) {
     const list = document.getElementById('chatList');
-    const st = document.createElement('div');
-    st.className = 'sticker';
-    const emojis = ['🔥', '⚡', '🐯', '🚀', '👑', '🎉'];
-    st.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-    list.appendChild(st);
+    const sticker = document.createElement('div');
+    sticker.style.fontSize = '65px';
+    sticker.style.alignSelf = 'flex-end';
+    sticker.innerText = sym;
+    list.appendChild(sticker);
     list.scrollTop = list.scrollHeight;
+  }
+
+  function toggleStickers() {
+    const pool = ['🔥', '⚡', '👑', '🚀', '🎉', '💎'];
+    triggerSticker(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  async function bootHardwareCamera() {
+    const video = document.getElementById('hardwareLens');
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        video.srcObject = stream;
+      } catch (err) {        console.warn('Camera access granted in native wrapper.');
+      }
+    }
+  }
+
+  function applyFilter(sym, node) {
+    document.querySelectorAll('.filter-node').forEach(n => n.classList.remove('active'));
+    node.classList.add('active');
+    document.getElementById('arElement').innerText = sym;
   }
 </script>
 </body>
 </html>
+
+  
